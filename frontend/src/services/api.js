@@ -15,16 +15,24 @@ export const apiClient = axios.create({
   timeout: 30000,
 });
 
-// API Error interceptor
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    console.error('[Luna API Error]', error.response?.data || error.message);
-    return Promise.reject(error);
+// Helper to format API error messages
+export function getErrorMessage(error) {
+  if (error.response?.data?.error?.message) {
+    return error.response.data.error.message;
   }
-);
+  if (error.response?.data?.detail) {
+    if (typeof error.response.data.detail === 'string') {
+      return error.response.data.detail;
+    }
+    return JSON.stringify(error.response.data.detail);
+  }
+  if (error.message) {
+    return error.message;
+  }
+  return 'Unknown network or calculation error occurred.';
+}
 
-// 1. Candidate Sites
+// 1. Candidate Sites Catalog
 export const getSites = async () => {
   const response = await apiClient.get('/sites');
   return response.data;
